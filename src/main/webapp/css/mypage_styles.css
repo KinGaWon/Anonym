@@ -20,7 +20,8 @@
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     background-color: #fff;
     text-align: center;
-    height: 925px;
+    min-height: 925px;
+    height: auto;
 }
 
 .main-container6 {
