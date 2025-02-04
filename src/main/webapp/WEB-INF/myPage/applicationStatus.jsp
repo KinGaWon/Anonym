@@ -5,8 +5,13 @@
 <%
 
 List<ApplicantVO> alist = (List<ApplicantVO>)request.getAttribute("alist");
+Map<String, Integer> statusCounts = (Map<String, Integer>) request.getAttribute("statusCounts");
+if (statusCounts == null) {
+    statusCounts = new HashMap<>(); // null 방지
+}
 
-%> 
+%>
+
 <%@ include file="../include/header.jsp" %>
 <link rel="stylesheet" href="<%= request.getContextPath() %>/css/k_styles.css" />
 <link rel="stylesheet" href="<%= request.getContextPath() %>/css/mypage_styles.css" />
@@ -16,23 +21,26 @@ List<ApplicantVO> alist = (List<ApplicantVO>)request.getAttribute("alist");
             <div class="main-container">
                 <!-- 지원 현황 목록 -->
                 <section class="apply-count">
-                    <div class="apply-count-div">
-                        <div>미열람</div>
-                        <div class="a-count">0건</div>
-                    </div>
-                    <div class="apply-count-div">
-                        <div>합격</div>
-                        <div class="a-count">0건</div>
-                    </div>
-                    <div class="apply-count-div">
-                        <div>불합격</div>
-                        <div class="a-count">0건</div>
-                    </div>
-                    <div class="apply-count-div" id="showAll">
-					    <div>전체 보기</div>
-					    <div class="a-count">0건</div>
-					</div>
-                </section>
+				    <div class="apply-count-div">
+				        <div>미열람</div>
+				        <span class="a-count"><%= statusCounts.getOrDefault("W", 0) %>건</span>
+				    </div>
+				    <div class="apply-count-div">
+				        <div>합격</div>
+				        <span class="a-count"><%= statusCounts.getOrDefault("E", 0) %>건</span>
+				    </div>
+				    <div class="apply-count-div">
+				        <div>불합격</div>
+				        <span class="a-count"><%= statusCounts.getOrDefault("D", 0) %>건</span>
+				    </div>
+				    <div class="apply-count-div" id="showAll">
+				        <div>전체 보기</div>
+				        <span class="a-count">
+				            <%= statusCounts.getOrDefault("W", 0) + statusCounts.getOrDefault("E", 0) + statusCounts.getOrDefault("D", 0) %>건
+				        </span>
+				    </div>
+				</section>
+
                 <br><br><br>
                 <section class="apply-list">
                     <table border="1">
@@ -84,59 +92,24 @@ List<ApplicantVO> alist = (List<ApplicantVO>)request.getAttribute("alist");
 
 		<script>
 		document.addEventListener("DOMContentLoaded", () => {
-		    const applyListRows = document.querySelectorAll(".apply-list tbody tr");
-		    const statusCounts = {
-		        "미열람": 0,
-		        "합격": 0,
-		        "불합격": 0
-		    };
+		    const applyListRows = document.querySelectorAll(".apply-list tbody tr"); // 모든 지원 내역 행 가져오기
 
-		    // 각 상태별로 행 개수를 계산
-		    applyListRows.forEach(row => {
-		        const status = row.dataset.status;
-		        if (statusCounts[status] !== undefined) {
-		            statusCounts[status]++;
-		        }
-		    });
-
-		    // 각 상태별 건수를 apply-count-div에 업데이트
-		    document.querySelectorAll(".apply-count-div").forEach(div => {
-		        const statusText = div.querySelector("div:first-child").textContent.trim();
-		        const countElement = div.querySelector(".a-count");
-
-		        if (statusCounts[statusText] !== undefined) {
-		            countElement.textContent = `${statusCounts[statusText]}건`;
-		        } else if (statusText === "전체 보기") {
-		            // 전체 보기에는 모든 건수를 합산하여 표시
-		            const totalCount = Object.values(statusCounts).reduce((sum, count) => sum + count, 0);
-		            countElement.textContent = `${totalCount}건`;
-		        }
-		    });
-
-		    // apply-count-div 클릭 시 필터링
 		    document.querySelectorAll(".apply-count-div").forEach(div => {
 		        div.addEventListener("click", () => {
-		            const selectedStatus = div.querySelector("div:first-child").textContent.trim();
+		            const selectedStatus = div.querySelector("div").textContent.trim(); // 선택한 필터 텍스트
 
-		            // 전체 보기일 경우 모든 행을 표시
-		            if (selectedStatus === "전체 보기") {
-		                applyListRows.forEach(row => {
-		                    row.style.display = "";
-		                });
-		            } else {
-		                // 선택한 상태에 맞는 행만 표시하고 나머지는 숨김
-		                applyListRows.forEach(row => {
-		                    if (row.dataset.status === selectedStatus) {
-		                        row.style.display = "";
-		                    } else {
-		                        row.style.display = "none";
-		                    }
-		                });
-		            }
+		            applyListRows.forEach(row => {
+		                const rowStatus = row.dataset.status; // 각 행의 심사 상태
+		                
+		                if (selectedStatus === "전체 보기" || rowStatus === selectedStatus) {
+		                    row.style.display = ""; // 보이기
+		                } else {
+		                    row.style.display = "none"; // 숨기기
+		                }
+		            });
 		        });
 		    });
 		});
-			
 		</script>
 
 <%@ include file="../include/footer.jsp" %>
