@@ -557,7 +557,7 @@ public class myPageController
 
 				if(result > 0)
 				{
-					System.out.println("�긽�깭媛� 蹂�寃쎈릺�뿀�뒿�땲�떎.");
+					System.out.println("상태가 변경되었습니다.");
 				}
 				
 				response.sendRedirect("resumeList.do");
